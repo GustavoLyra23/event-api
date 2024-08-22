@@ -13,12 +13,5 @@ public class EventApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-
-        System.out.println();
-        System.out.println();
-        find.All();
-        System.out.println();
-
-
     }
 }
