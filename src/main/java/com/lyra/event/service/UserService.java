@@ -1,28 +1,49 @@
 package com.lyra.event.service;
 
+import com.lyra.event.dto.usercredential.UserCredentialRequestDto;
+import com.lyra.event.entities.User;
+import com.lyra.event.entities.UserCredentials;
+import com.lyra.event.repository.UserCredentialsRepository;
 import com.lyra.event.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class UserService implements UserDetailsService {
+public class UserService {
+
+    @Autowired
+    private UserCredentialsRepository userCredentialsRepository;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private UserRepository userRepository;
 
-    @Override
-    @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByEmailWithRoles(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+    @Transactional
+    public void registerUser(UserCredentialRequestDto dto) {
+        User user = new User();
+        user.setUsername(dto.username());
+        user = userRepository.save(user);
+
+        UserCredentials userCredentials = new UserCredentials();
+        userCredentials.setEmail(dto.email());
+        userCredentials.setPassword(passwordEncoder.encode(dto.password()));
+        userCredentials.setUser(user);
+        userCredentialsRepository.save(userCredentials);
+        var token = jwtTokenProvider.createVerificationToken(userCredentials.getEmail());
+        String verificationUrl = "http://localhost:8080/api/v1/auth/verify?token=" + token;
+        emailService.sendVerificationEmail(userCredentials.getEmail(), verificationUrl);
     }
-
-
-
-
 
 
 }

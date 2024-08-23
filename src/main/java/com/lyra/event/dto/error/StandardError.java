@@ -1,4 +1,4 @@
-package com.lyra.event.dto;
+package com.lyra.event.dto.error;
 
 import java.time.Instant;
 
