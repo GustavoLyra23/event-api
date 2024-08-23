@@ -1,7 +1,25 @@
 package com.lyra.event.dto.error;
 
+import lombok.*;
+
 import java.time.Instant;
 
-public record StandardError(Instant timestamp, Integer status, String error, String message, String path) {
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode
+public class StandardError {
+
+    private Instant timestamp;
+
+    private Integer status;
+
+    private String error;
+
+    private String message;
+
+    private String path;
+
 
 }

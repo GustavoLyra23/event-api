@@ -22,8 +22,9 @@ public class AuthController {
     }
 
     @GetMapping("/verify")
-    public ResponseEntity<Void> verifyUser() {
-        return null;
+    public ResponseEntity<String> verifyUser(@RequestParam("token") String token) {
+        var response = service.verifyUser(token);
+        return ResponseEntity.ok().body(response);
     }
 
 
