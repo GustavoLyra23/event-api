@@ -7,9 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 @Table(name = "tb_user")
@@ -28,8 +26,11 @@ public class User {
     @OneToMany(mappedBy = "eventOwner")
     private List<Event> events = new ArrayList<>();
 
+    @ManyToMany(mappedBy = "participants")
+    private Set<Event> eventsJoined = new HashSet<>();
+
     @Lob
-    private Byte[] profilePicute;
+    private byte[] profilePicture;
 
     private String description;
 

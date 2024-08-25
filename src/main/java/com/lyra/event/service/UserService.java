@@ -2,7 +2,6 @@ package com.lyra.event.service;
 
 import com.lyra.event.dto.user.UserDto;
 import com.lyra.event.dto.usercredential.UserCredentialRequestDto;
-import com.lyra.event.entities.Role;
 import com.lyra.event.entities.User;
 import com.lyra.event.entities.UserCredentials;
 import com.lyra.event.repository.RoleRepository;
@@ -19,6 +18,9 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Service
 public class UserService {
@@ -66,8 +68,7 @@ public class UserService {
         }
 
         var email = jwtTokenProvider.getEmailFromToken(token);
-        var userCredentials = userCredentialsRepository.findByEmailCredentials(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        var userCredentials = userCredentialsRepository.findByEmailCredentials(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         if (userCredentials.isEnabled()) {
             throw new BadRequestException("User already verified.");
         }
@@ -80,22 +81,37 @@ public class UserService {
 
     @Transactional
     public UserDto getMe() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        String email = "";
-        if (authentication instanceof JwtAuthenticationToken) {
-            JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) authentication;
-            Jwt jwt = jwtAuthenticationToken.getToken();
-
-            email = jwt.getClaim("username");
-        }
-
-        var userCredentials = userCredentialsRepository.findByUsernameTest(email)
+        var email = getUsernameFromJwtToken();
+        var userCredentials = userCredentialsRepository
+                .findWithUser(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         if (!userCredentials.isEnabled()) {
             throw new ForbiddenException("User not enabled. Please verify your email.");
         }
         var user = userCredentials.getUser();
         return new UserDto(user);
+    }
+
+    @Transactional
+    public void updateProfilePicture(MultipartFile file) throws IOException {
+        var email = getUsernameFromJwtToken();
+        var userCredentials = userCredentialsRepository.findWithUser(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        if (!userCredentials.isEnabled()) {
+            throw new ForbiddenException("User not enabled. Please verify your email.");
+        }
+        var user = userCredentials.getUser();
+        byte[] pfp = file.getBytes();
+        user.setProfilePicture(pfp);
+        userRepository.save(user);
+    }
+
+
+    private String getUsernameFromJwtToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) authentication;
+        Jwt jwt = jwtAuthenticationToken.getToken();
+        var email = jwt.getClaim("username");
+        return (String) email;
     }
 }

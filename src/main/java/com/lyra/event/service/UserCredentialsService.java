@@ -18,7 +18,7 @@ public class UserCredentialsService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var userCredentials = userCredentialsRepository.findByUsernameTest(username)
+        var userCredentials = userCredentialsRepository.findByEmailWithRoles(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         if (!userCredentials.isEnabled()) {
             throw new ForbiddenException("User not enabled. Please verify your email.");

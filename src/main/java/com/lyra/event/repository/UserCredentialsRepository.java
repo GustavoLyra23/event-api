@@ -14,7 +14,10 @@ public interface UserCredentialsRepository extends JpaRepository<UserCredentials
     @Query("SELECT u FROM UserCredentials u WHERE u.email = :email")
     Optional<UserCredentials> findByEmailCredentials(String email);
 
-    @Query("SELECT u FROM UserCredentials u WHERE u.email = :username")
-    Optional<UserCredentials> findByUsernameTest(String username);
+    @Query("SELECT uc FROM UserCredentials uc " +
+            "JOIN FETCH uc.user u " +
+            "WHERE uc.email = :username")
+    Optional<UserCredentials> findWithUser(String username);
+
 
 }
