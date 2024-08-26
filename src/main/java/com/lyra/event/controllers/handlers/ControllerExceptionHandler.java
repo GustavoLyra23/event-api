@@ -37,7 +37,7 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public ResponseEntity<StandardError> handleConstraintViolation(SQLIntegrityConstraintViolationException e, HttpServletRequest request) {
         HttpStatus status = HttpStatus.CONFLICT;
-        StandardError error = new StandardError(Instant.now(), status.value(), "Integrity error", "invalid user", request.getRequestURI());
+        StandardError error = new StandardError(Instant.now(), status.value(), "Integrity error", e.getMessage(), request.getRequestURI());
         return ResponseEntity.status(status).body(error);
     }
 

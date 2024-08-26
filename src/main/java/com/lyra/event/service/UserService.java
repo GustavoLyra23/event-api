@@ -95,7 +95,7 @@ public class UserService {
     @Transactional
     public void updateProfilePicture(MultipartFile file) throws IOException {
         var email = getUsernameFromJwtToken();
-        var userCredentials = userCredentialsRepository.findWithUser(email)
+        var userCredentials = userCredentialsRepository.findWithUserAndEvents(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         if (!userCredentials.isEnabled()) {
             throw new ForbiddenException("User not enabled. Please verify your email.");
